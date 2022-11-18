@@ -1,5 +1,15 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
+from fastapi.responses import JSONResponse
+
+# 에러 처리
+class ResponseDTO(BaseModel):
+    code: int
+    message: str
+    data: object
+
+
 
 class Cat(BaseModel):
     name : str
@@ -10,7 +20,7 @@ app = FastAPI()
 
 # @app.get("/")
 # @app.get("/first")
-@app.get("/first/{id}")  # 키 없이 / 구분
+@app.get("/first/{id}")  # 키 없이 / 로 구분
 # async def root(id):
 async def root(id: int):
     return {"message": "Hello World", "id": id}  # 딕셔너리 형태
@@ -24,3 +34,20 @@ async def second(skip:int = 0, limit:int = 10):
 async def cat(cat: Cat):  # cat 라는 함수 안에 cat 이라는 변수(?)
     # return ...  # ...: 생략할 때 / JS의 ...과 다르다. pass는 에러 발생
     return cat
+
+@app.get("/error")
+async def error():
+    # if True:
+    #     return JSONResponse(status_code=200, content={"message": "Item not found"})
+    # else:    
+    #     return JSONResponse(status_code=404, content={"message": "Item not found"})
+    dto = ResponseDTO(
+        code=0,
+        message="페이지가 없습니다.",
+        data=None
+    )
+    return JSONResponse(status_code=404, content=jsonable_encoder(dto))
+
+@app.get("/error1")
+async def error1():
+    return HTTPException(status_code=404, detail={"message": "Item not found"})
