@@ -1,10 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-class Cat(BaseModel):
-    name : str
-    id: int = 0
-
 app = FastAPI()
 
 
@@ -19,8 +15,3 @@ async def root(id: int):
 @app.get("/second")  # 쿼리 매개변수
 async def second(skip:int = 0, limit:int = 10):
     return {"skip":skip, "limit":limit}
-
-@app.post("/cat")
-async def cat(cat: Cat):  # cat 라는 함수 안에 cat 이라는 변수(?)
-    # return ...  # ...: 생략할 때 / JS의 ...과 다르다. pass는 에러 발생
-    return cat
