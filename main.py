@@ -1,7 +1,8 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.encoders import jsonable_encoder
-from pydantic import BaseModel
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+
 
 # 에러 처리
 class ResponseDTO(BaseModel):
@@ -51,3 +52,14 @@ async def error():
 @app.get("/error1")
 async def error1():
     return HTTPException(status_code=404, detail={"message": "Item not found"})
+
+@app.post("/files/")
+async def check_file(
+    uploadFile: UploadFile = File(), token: str = Form()
+):
+    return {
+        "token": token,
+        # "uploadFileSize": len(await upload_file.read()),
+        "uploadFileName": uploadFile.filename,
+        "uploadFileContentType": uploadFile.content_type,
+    }
