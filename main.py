@@ -1,5 +1,7 @@
+from databases import Database
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.encoders import jsonable_encoder
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -18,6 +20,21 @@ class Cat(BaseModel):
 
 app = FastAPI()
 
+
+origins = [
+    "http://127.0.0.1:5500",  # 라이브서버는 5500 포트 사용
+    # "*" 모든 포트 허용
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # methods: get, post delete put
+    allow_headers=["*"],  # 모든 헤더를 다 받겠다는 의미
+)
+
+database = Database("sqlite:///C:\programming\sqlite\hr")
 
 # @app.get("/")
 # @app.get("/first")
@@ -63,3 +80,15 @@ async def check_file(
         "uploadFileName": uploadFile.filename,
         "uploadFileContentType": uploadFile.content_type,
     }
+
+@app.get("/findall")  # 요청이 들어오면 아래 함수 실행
+async def fetch_data():
+
+    await database.connect()  # await: 연결할 때 까지 기다리겠다.
+
+    query = "SELECT * FROM REGIONS"  # 실무에서는 *를 사용하지 말고 다 입력해야 한다.
+    results = await database.fetch_all(query=query)  # fetch_all: 데이터를 모두 가져오겠다.
+
+    await database.disconnect()  # disconnect: 연결 해제
+
+    return results
