@@ -18,6 +18,14 @@ class Cat(BaseModel):
     name : str
     id: int = 0
 
+
+class RequestInsertRegionDTO(BaseModel):
+    regionName: str
+    
+    
+class RequestUpdateRegionDTO(BaseModel):
+    regionName: str
+
 app = FastAPI()
 
 
@@ -92,3 +100,84 @@ async def fetch_data():
     await database.disconnect()  # disconnect: 연결 해제
 
     return results
+
+@app.post("/insert")
+async def insert_data(requestInsertRegionDTO: RequestInsertRegionDTO):
+
+    await database.connect()
+    
+    error = False
+
+    try:
+        query = f"""INSERT INTO REGIONS
+                      (region_name)
+                    values
+                      ('{requestInsertRegionDTO.regionName}')"""
+        results = await database.execute(query)  # execute: 실행하라는 의미
+    except:
+        error = True
+        # pass
+    finally:
+        await database.disconnect()
+
+    if (error):
+        return "에러발생"
+    
+    return results
+
+
+@app.post("/update/{id}")
+async def update_data(id : int, requestUpdateRegion: RequestUpdateRegionDTO): # RequestUpdateRegionDTO 추가하기
+    await database.connect()
+    
+    error = False
+    
+    try:
+        query = f"""UPDATE REGIONS 
+                    SET REGION_NAME=='{requestUpdateRegion.regionName}'
+                    WHERE REGION_ID={id}
+                    """
+        results = await database.execute(query)
+    except:
+        error = True
+    
+    finally:
+        await database.disconnect()
+        
+    if (error):
+        return "에러 발생"
+    
+    return results
+
+
+@app.post("/delete/{id}")
+async def delete_data(id : int):
+    await database.connect()
+    
+    error = False
+
+    try:
+        query = f"""DELETE FROM REGIONS
+                    WHERE REGION_ID={id}"""
+        results = await database.execute(query)
+    except:
+        error = True
+        
+    finally:
+        await database.disconnect()
+        
+    if (error):
+        return "에러 발생"
+    
+    return results     
+        
+@app.post("/files-base64/")
+async def bas64_file(
+    uploadFile: str = Form(), token: str = Form()
+):
+    # print(uploadFile)
+    return {
+        "token": token,
+        "uploadFile": uploadFile
+    }       
+
